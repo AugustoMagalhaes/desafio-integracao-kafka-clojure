@@ -1,6 +1,8 @@
 (ns projeto-final.core
   (:gen-class)
-  (:require [clojure.data.json :as json])
+  (:require [clojure.data.json :as json]
+            [clojure.tools.logging :as log]
+            [taoensso.timbre :as logt])
   (:import (java.time Duration)
            [java.util Properties]
            [org.apache.kafka.clients.admin AdminClientConfig KafkaAdminClient NewTopic]
@@ -20,7 +22,8 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To .log .logt .json AdminClientConfig NewTopic KafkaAdminClient KafkaConsumer KafkaProducer ProducerRecord TopicPartition Duration))
+  (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To 
+           log/info logt/info .json AdminClientConfig NewTopic KafkaAdminClient KafkaConsumer KafkaProducer ProducerRecord TopicPartition Duration))
 
 
 (deftype Desserializador []
