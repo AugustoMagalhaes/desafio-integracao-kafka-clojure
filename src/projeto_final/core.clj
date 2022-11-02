@@ -22,42 +22,59 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To 
+  (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To
            log/info logt/info .json AdminClientConfig NewTopic KafkaAdminClient KafkaConsumer KafkaProducer ProducerRecord TopicPartition Duration))
 
 
 (deftype Desserializador []
-    Deserializer
-    (close [_])
-    (configure [_ configs isKey])
-    (deserialize [_ topic data]
-        (json/read-str (.deserialize (StringDeserializer.) topic data) :key-fn keyword)))
+  Deserializer
+  (close [_])
+  (configure [_ configs isKey])
+  (deserialize [_ topic data]
+    (json/read-str (.deserialize (StringDeserializer.) topic data) :key-fn keyword)))
 
 
 
 (deftype Serializador []
-    Serializer
-    (close [_])
-    (configure [_ configs isKey])
-    (serialize [_ topic data]
-        (.serialize (StringSerializer.) topic (json/write-str data))))
+  Serializer
+  (close [_])
+  (configure [_ configs isKey])
+  (serialize [_ topic data]
+    (.serialize (StringSerializer.) topic (json/write-str data))))
 
 
 
 (deftype Serde-personalizado []
-    Serde
-    (close [_])
-    (configure [_ configs isKey])
-    (deserializer [_] (Desserializador.))
-    (serializer [_] (Serializador.)))
+  Serde
+  (close [_])
+  (configure [_ configs isKey])
+  (deserializer [_] (Desserializador.))
+  (serializer [_] (Serializador.)))
 
 
 
 (def props
-    (doto (Properties.)
-        (.putAll
-            {StreamsConfig/APPLICATION_ID_CONFIG  "trt-topology"
-             StreamsConfig/BOOTSTRAP_SERVERS_CONFIG "host.docker.internal:9096"
-             StreamsConfig/DEFAULT_KEY_SERDE_CLASS_CONFIG (.getClass (Serdes/String))
-             StreamsConfig/DEFAULT_VALUE_SERDE_CLASS_CONFIG (.getClass (Serde-personalizado.))})))
+  (doto (Properties.)
+    (.putAll
+     {StreamsConfig/APPLICATION_ID_CONFIG  "trt-topology"
+      StreamsConfig/BOOTSTRAP_SERVERS_CONFIG "host.docker.internal:9096"
+      StreamsConfig/DEFAULT_KEY_SERDE_CLASS_CONFIG (.getClass (Serdes/String))
+      StreamsConfig/DEFAULT_VALUE_SERDE_CLASS_CONFIG (.getClass (Serde-personalizado.))})))
 
+(deftype  Processador [^:volatile-mutable context]
+  Processor
+  (close [_])
+  (init [_ c]
+    (set! context c))
+  (process [_ k msg]))
+
+(deftype Supplier-processador []
+  ProcessorSupplier
+  (get [_]
+    (Processador. nil)))
+
+(defn topology []
+  (doto (Topology.)
+    (.addSource     ""                          (into-array String [""]))
+    (.addProcessor  "" (Supplier-processador.)  (into-array String [""]))
+    (.addSink       "" ""                       (into-array String [""]))))
