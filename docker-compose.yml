@@ -16,7 +16,7 @@ services:
       - '2888:2888'
       - '3888:3888'
 
-  broker1:
+  kafka-1:
     image: confluentinc/cp-kafka:5.3.1
     container_name: kafka-1
     ports:
@@ -34,13 +34,14 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
-  db:
+  cassandra:
     image: cassandra:3.11.6
     container_name: cassandra
     ports:
       - '7000:7000'
+      - '9042:9042'
     depends_on:
-      - broker1
+      - kafka-1
     environment:
       CASSANDRA_BROADCAST_ADDRESS: host.docker.internal
       CASSANDRA_CLUSTER_NAME: 'consulta'
