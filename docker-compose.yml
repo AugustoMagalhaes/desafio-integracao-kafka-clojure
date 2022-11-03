@@ -45,3 +45,4 @@ services:
     environment:
       CASSANDRA_BROADCAST_ADDRESS: host.docker.internal
       CASSANDRA_CLUSTER_NAME: 'consulta'
+
