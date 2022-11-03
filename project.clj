@@ -7,6 +7,7 @@
                  [org.apache.kafka/kafka-streams "3.2.1"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/data.json "2.4.0"]
+                 [cc.qbits/alia-all "5.0.0-alpha7"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.apache.kafka/kafka-clients "3.0.0"]
                  [org.apache.kafka/kafka_2.12 "3.0.0"]
