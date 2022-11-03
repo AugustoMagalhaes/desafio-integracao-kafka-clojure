@@ -57,7 +57,7 @@
   (doto (Properties.)
     (.putAll
      {StreamsConfig/APPLICATION_ID_CONFIG  "trt-topology"
-      StreamsConfig/BOOTSTRAP_SERVERS_CONFIG "host.docker.internal:9096"
+      StreamsConfig/BOOTSTRAP_SERVERS_CONFIG "host.docker.internal:9042"
       StreamsConfig/DEFAULT_KEY_SERDE_CLASS_CONFIG (.getClass (Serdes/String))
       StreamsConfig/DEFAULT_VALUE_SERDE_CLASS_CONFIG (.getClass (Serde-personalizado.))})))
 
