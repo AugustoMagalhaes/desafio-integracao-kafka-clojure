@@ -2,29 +2,79 @@
   (:require [qbits.alia :as alia])
   (:gen-class))
 
-(def session (alia/session {:session-keyspace "alia-test"
-                            :contact-points ["host.docker.internal:7000"]}))
 
-(alia/execute session "CREATE KEYSPACE testegrupo WITH replication = {:'class' 'SimpleStrategy', 'replication_factor': 3};")
+(def session (alia/session {:session-keyspace "alia_test"
+                            :contact-points ["host.docker.internal:9042"]
+                            :load-balancing-local-datacenter "datacenter1"}))
 
-(def prepara (alia/prepare session "INSERT INTO users
-                         (user_name, first_name, last_name)
-                         VALUES(?, ?, ?);"))
+;(alia/execute session "CREATE KEYSPACE testegrupo WITH replication = {:'class' 'SimpleStrategy', 'replication_factor': 3};")
 
-(defn cria [nome primeiro ultimo]
-  (alia/execute session prepara {:values [nome, primeiro, ultimo]}))
+;; (def prepara (alia/prepare session "INSERT INTO users
+;;                          (user_name, first_name, last_name)
+;;                          VALUES(?, ?, ?);"))
 
-(defn le [nome] (alia/execute session "select * from users where user_name=?" {:values nome}))
+;; (defn cria [nome primeiro ultimo]
+;;   (alia/execute session prepara {:values [nome, primeiro, ultimo]}))
 
-(def prepara-le (alia/prepare session "select * from projetoteste.users where user_name= :nome limit :lmt;"))
+;; (defn le [nome] (alia/execute session "select * from users where user_name=?" {:values nome}))
 
-(defn le [nome] (alia/execute session prepara-le {:values {:nome nome :lmt (int 1)}}))
+;; (def prepara-le (alia/prepare session "select * from projetoteste.users where user_name= :nome limit :lmt;"))
 
-;; (defn -main
-;;   "I don't do a whole lot ... yet."
-;;   [& args]
-;;   (cria "" "" "")
-;;   (println "começooooooooooo")
-;;   (let [teste (le "kung fu panda")]
-;;     (println teste))
-;;   (println "acaboooooooo"))
+;; (defn le [nome] (alia/execute session prepara-le {:values {:nome nome :lmt (int 1)}}))
+
+(defn cria-tabela-registro-tipo
+  []
+  (alia/execute session "CREATE TABLE IF NOT EXISTS registro_por_tipo (tipo varchar,
+                                              valor double,
+                                              data_vencimento varchar,
+                                              id_gerado varchar,
+                                              quantidade int,
+                                              id_ativo_participante varchar,
+                                              data_emissao varchar,
+                                              local_emissao varchar,
+                                              local_pagamento varchar,
+                                              forma_pagamento varchar,
+                                              conta_emissao varchar,
+                                              status varchar,
+                                              cnpj_cpf varchar,
+                                              PRIMARY KEY ((tipo), valor) );"))
+
+(defn cria-tabela-registro-id-ativo
+  []
+  (alia/execute session "CREATE TABLE IF NOT EXISTS registro_por_id_ativo (id_ativo_participante varchar,
+                                              valor varchar,
+                                              data_vencimento varchar,
+                                              id_gerado varchar,
+                                              quantidade int,
+                                              tipo varchar,
+                                              data_emissao varchar,
+                                              local_emissao varchar,
+                                              local_pagamento varchar,
+                                              forma_pagamento varchar,
+                                              conta_emissao varchar,
+                                              status varchar,
+                                              cnpj_cpf varchar,
+                                              PRIMARY KEY ((id_ativo_participante), valor) );"))
+
+(defn cria-tabela-registro-cadastro
+  []
+  (alia/execute session "CREATE TABLE IF NOT EXISTS registro_por_cnpj_cpf (cnpj_cpf varchar,
+                                              valor varchar,
+                                              data_vencimento varchar,
+                                              id_gerado varchar,
+                                              quantidade int,
+                                              tipo varchar,
+                                              data_emissao varchar,
+                                              local_emissao varchar,
+                                              local_pagamento varchar,
+                                              forma_pagamento varchar,
+                                              conta_emissao varchar,
+                                              status varchar,
+                                              id_ativo_participante varchar,
+                                              PRIMARY KEY ((cnpj_cpf), valor) );"))
+
+
+(defn -main []
+  (cria-tabela-registro-tipo)
+  (cria-tabela-registro-id-ativo)
+  (cria-tabela-registro-cadastro))
