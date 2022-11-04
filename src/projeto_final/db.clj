@@ -5,26 +5,25 @@
 (def session (alia/session {:session-keyspace "alia-test"
                             :contact-points ["host.docker.internal:7000"]}))
 
-(alia/execute session "CREATE KEYSPACE testegrupo WITH replication = {:'class' 'SimpleStrategy', 'replication_factor': 3};")
+(defn remove-list [data]
+  ;; função remove list do retorno da query e retorna só o mapa
+  (peek (into [] data)))
 
-(def prepara (alia/prepare session "INSERT INTO users
-                         (user_name, first_name, last_name)
-                         VALUES(?, ?, ?);"))
+(defn list-vector [data]
+  ;;função troca list por vector do retorno da query
+  (into [] data))
 
 (defn cria [nome primeiro ultimo]
-  (alia/execute session prepara {:values [nome, primeiro, ultimo]}))
+  (alia/execute session "insert into users (user_name, first_name, last_name) values (?, ?, ?)" {:values [nome primeiro ultimo]}))
 
-(defn le [nome] (alia/execute session "select * from users where user_name=?" {:values nome}))
-
-(def prepara-le (alia/prepare session "select * from projetoteste.users where user_name= :nome limit :lmt;"))
-
-(defn le [nome] (alia/execute session prepara-le {:values {:nome nome :lmt (int 1)}}))
+(defn le [nome]
+  (alia/execute session "select * from users where user_name=?" {:values [nome]}))
 
 ;; (defn -main
 ;;   "I don't do a whole lot ... yet."
 ;;   [& args]
 ;;   (cria "" "" "")
 ;;   (println "começooooooooooo")
-;;   (let [teste (le "kung fu panda")]
+;;   (let [teste (remove-list (le "kung fu panda"))]
 ;;     (println teste))
 ;;   (println "acaboooooooo"))
