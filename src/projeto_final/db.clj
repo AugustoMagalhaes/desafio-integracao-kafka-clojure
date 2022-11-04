@@ -74,7 +74,17 @@
                                               PRIMARY KEY ((cnpj_cpf), valor) );"))
 
 
+(defn popula-registro-tipo
+  [tipo, valor, data_vencimento, id_gerado, quantidade, id_ativo_participante, data_emissao, forma_pagamento, conta_emissao, status, cnpj_cpf]
+  (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_tipo
+                         (tipo, valor, data_vencimento, id_gerado, quantidade, id_ativo_participante, data_emissao, forma_pagamento, conta_emissao, status, cnpj_cpf)
+                         VALUES(:tipo, :valor, :data_vencimento, :id_gerado, :quantidade, :id_ativo_participante, :data_emissao, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
+    (alia/execute session query-prep {:values {:tipo tipo :valor valor :data_vencimento data_vencimento :id_gerado id_gerado :quantidade quantidade :id_ativo_participante id_ativo_participante :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}}))
+  )
+
 (defn -main []
   (cria-tabela-registro-tipo)
   (cria-tabela-registro-id-ativo)
-  (cria-tabela-registro-cadastro))
+  (cria-tabela-registro-cadastro)
+  (popula-registro-tipo "cdb" 80.00 "20-03-2023" "ASB900" (int 23) "100201" "20-03-2022" "a vista" "2002a" "pendente" "08125792621")
+  )
