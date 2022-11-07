@@ -72,11 +72,11 @@
 (defn cria-tabela-registro-cadastro
   []
   (alia/execute session "CREATE TABLE IF NOT EXISTS registro_por_cnpj_cpf (cnpj_cpf varchar,
-                                              valor varchar,
-                                              data_vencimento varchar,
-                                              id_gerado varchar,
-                                              quantidade int,
                                               tipo varchar,
+                                              valor varchar,
+                                              id_gerado varchar,
+                                              data_vencimento varchar,
+                                              quantidade int,
                                               data_emissao varchar,
                                               local_emissao varchar,
                                               local_pagamento varchar,
@@ -84,7 +84,15 @@
                                               conta_emissao varchar,
                                               status varchar,
                                               id_ativo_participante varchar,
-                                              PRIMARY KEY ((cnpj_cpf), valor, tipo, id_gerado) );"))
+                                              PRIMARY KEY ((cnpj_cpf), tipo, valor, id_gerado) );"))
+
+
+(defn popula-registro-cadastro
+  [cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, id_ativo_participante]
+  (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_cnpj_cpf
+                         (cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, id_ativo_participante)
+                         VALUES(:cnpj_cpf, :tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :data_emissao, :forma_pagamento, :conta_emissao, :status, :id_ativo_participante);")]
+    (alia/execute session query-prep {:values {:cnpj_cpf cnpj_cpf :tipo tipo :valor (double valor) :id_gerado id_gerado :data_vencimento data_vencimento  :quantidade (int quantidade) :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :id_ativo_participante id_ativo_participante}})))
 
 
 (defn gera-id
