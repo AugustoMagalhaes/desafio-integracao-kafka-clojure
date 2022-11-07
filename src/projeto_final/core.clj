@@ -2,13 +2,8 @@
   (:gen-class)
   (:require [clojure.data.json :as json]
             [clojure.tools.logging :as log]
-            [taoensso.timbre :as logt])
-  (:import (java.time Duration)
-           [java.util Properties]
-           [org.apache.kafka.clients.admin AdminClientConfig KafkaAdminClient NewTopic]
-           org.apache.kafka.clients.consumer.KafkaConsumer
-           [org.apache.kafka.clients.producer KafkaProducer ProducerRecord]
-           (org.apache.kafka.common TopicPartition)
+            [projeto-final.db :refer :all])
+  (:import [java.util Properties]
            [org.apache.kafka.common.serialization
             Deserializer
             Serde
@@ -16,14 +11,14 @@
             Serializer
             StringDeserializer
             StringSerializer]
-           [org.apache.kafka.streams KafkaStreams StreamsConfig Topology]
+           [org.apache.kafka.streams StreamsConfig Topology]
            [org.apache.kafka.streams.processor Processor ProcessorSupplier To]))
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To
-           log/info logt/info .json AdminClientConfig NewTopic KafkaAdminClient KafkaConsumer KafkaProducer ProducerRecord TopicPartition Duration))
+;; (defn -main
+;;   "I don't do a whole lot ... yet."
+;;   [& args]
+;;   (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To
+;;            log/info logt/info .json AdminClientConfig NewTopic KafkaAdminClient KafkaConsumer KafkaProducer ProducerRecord TopicPartition Duration))
 
 
 (deftype Desserializador []
@@ -66,7 +61,18 @@
   (close [_])
   (init [_ c]
     (set! context c))
-  (process [_ k msg]))
+  (process [_ k msg]
+    (case (.topic context)
+      "registro.cdb"
+      (when (= (:status msg) "pendente")
+        (log/info "Mensagem rebeida, iniciando processo...")
+        (.forward context (:id-gerado msg) (assoc msg :status "executado") (To/child "registros")))
+             ; checa se existe participante antes....
+             ; gera o id antes
+      (let [tipo (:tipo msg) id_gerado (:id_gerado msg) data_vencimento (:data_vencimento msg) valor (:valor msg) quantidade (:quantidade msg) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status (:status msg) cnpj_cpf (:cnpj_cpf msg)]
+        
+        (popula-registro-tipo tipo id_gerado data_vencimento valor quantidade id_ativo_participante data_emissao forma_pagamento conta_emissao status cnpj_cpf))
+      (spit "relatorio.txt" (str k ": " msg "\n") :append true))))
 
 (deftype Supplier-processador []
   ProcessorSupplier
@@ -75,6 +81,6 @@
 
 (defn topology []
   (doto (Topology.)
-    (.addSource     ""                          (into-array String [""]))
-    (.addProcessor  "" (Supplier-processador.)  (into-array String [""]))
-    (.addSink       "" ""                       (into-array String [""]))))
+    (.addSource     "registros"                          (into-array String ["registro.cdb"]))
+    (.addProcessor  "processador" (Supplier-processador.)  (into-array String ["registros"]))
+    (.addSink       "registros" "registro.cdb"                       (into-array String ["processador"]))))
