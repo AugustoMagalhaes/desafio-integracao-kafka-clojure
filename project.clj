@@ -9,8 +9,6 @@
                  [org.clojure/data.json "2.4.0"]
                  [cc.qbits/alia-all "5.0.0-alpha7"]
                  [org.clojure/tools.logging "0.4.0"]
-                 [org.apache.kafka/kafka-clients "3.0.0"]
-                 [org.apache.kafka/kafka_2.12 "3.0.0"]
                  [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
                                                     javax.jms/jms
                                                     com.sun.jmdk/jmxtools
