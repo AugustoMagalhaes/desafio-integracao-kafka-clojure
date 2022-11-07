@@ -45,7 +45,7 @@
                          VALUES(:tipo, :valor, :data_vencimento, :id_gerado, :quantidade, :id_ativo_participante, :data_emissao, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
     (alia/execute session query-prep {:values {:tipo tipo :id_gerado id_gerado :data_vencimento data_vencimento :valor (double valor) :quantidade (int quantidade) :id_ativo_participante id_ativo_participante :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
 
-(defn cria-tabela-registro-id-ativo
+(defn cria-tabela-registro-id-gerado
   []
   (alia/execute session "CREATE TABLE IF NOT EXISTS registro_por_id_gerado (id_gerado varchar,
                                               tipo varchar,
@@ -61,6 +61,13 @@
                                               status varchar,
                                               cnpj_cpf varchar,
                                               PRIMARY KEY ((id_gerado)) );"))
+
+(defn popula-registro-id
+  [id_gerado, tipo, valor, id_ativo_participante, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, cnpj_cpf]
+  (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_id
+                         (id_gerado, tipo, valor, id_ativo_participante, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, cnpj_cpf)
+                         VALUES(:id_gerado, :tipo, :valor, :id_ativo_participante, :data_vencimento, :quantidade, :data_emissao, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
+    (alia/execute session query-prep {:values {:id_gerado id_gerado :tipo tipo :valor (double valor) :id_ativo_participante id_ativo_participante :data_vencimento data_vencimento :quantidade (int quantidade) :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
 
 (defn cria-tabela-registro-cadastro
   []
