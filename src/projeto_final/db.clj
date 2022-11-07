@@ -63,11 +63,11 @@
                                               PRIMARY KEY ((id_gerado)) );"))
 
 (defn popula-registro-id
-  [id_gerado, tipo, valor, id_ativo_participante, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, cnpj_cpf]
+  [id_gerado, tipo, valor, id_ativo_participante, data_vencimento, quantidade, data_emissao, local_emissao, local_pagamento,forma_pagamento, conta_emissao, status, cnpj_cpf]
   (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_id
-                         (id_gerado, tipo, valor, id_ativo_participante, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, cnpj_cpf)
-                         VALUES(:id_gerado, :tipo, :valor, :id_ativo_participante, :data_vencimento, :quantidade, :data_emissao, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
-    (alia/execute session query-prep {:values {:id_gerado id_gerado :tipo tipo :valor (double valor) :id_ativo_participante id_ativo_participante :data_vencimento data_vencimento :quantidade (int quantidade) :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
+                         (id_gerado, tipo, valor, id_ativo_participante, data_vencimento, quantidade, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, cnpj_cpf)
+                         VALUES(:id_gerado, :tipo, :valor, :id_ativo_participante, :data_vencimento, :quantidade, :data_emissao, :local_emissao, :local_pagamento, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
+    (alia/execute session query-prep {:values {:id_gerado id_gerado :tipo tipo :valor (double valor) :id_ativo_participante id_ativo_participante :data_vencimento data_vencimento :quantidade (int quantidade) :data_emissao data_emissao :local_emissao local_emissao :local_pagamento local_pagamento :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
 
 (defn cria-tabela-registro-cadastro
   []
