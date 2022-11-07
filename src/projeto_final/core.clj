@@ -65,7 +65,7 @@
     (case (.topic context)
       "registro.cdb"
       (when (= (:status msg) "pendente")
-        (log/info "Mensagem rebeida, iniciando processo...")
+        (log/info "Mensagem recebida, iniciando processo...")
         (.forward context (:id-gerado msg) (assoc msg :status "executado") (To/child "registros")))
              ; checa se existe participante antes....
              ; gera o id antes
