@@ -92,7 +92,7 @@
   (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_cnpj_cpf
                          (cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, id_ativo_participante)
                          VALUES(:cnpj_cpf, :tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :data_emissao, :forma_pagamento, :conta_emissao, :status, :id_ativo_participante);")]
-    (alia/execute session query-prep {:values {:cnpj_cpf cnpj_cpf :tipo tipo :valor (double valor) :id_gerado id_gerado :data_vencimento data_vencimento  :quantidade (int quantidade) :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :id_ativo_participante id_ativo_participante}})))
+    (alia/execute session query-prep {:values {:cnpj_cpf cnpj_cpf :tipo tipo :valor (double valor) :id_gerado id_gerado :data_vencimento data_vencimento :quantidade (int quantidade) :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :id_ativo_participante id_ativo_participante}})))
 
 
 (defn gera-id
@@ -104,6 +104,6 @@
 
 (defn -main []
   (cria-tabela-registro-tipo)
-  (cria-tabela-registro-id-ativo)
+  (cria-tabela-registro-id-gerado)
   (cria-tabela-registro-cadastro)
   (popula-registro-tipo "rdb" 71.00 "20-03-2023" "ASB900" 33 "100201" "20-03-2022" "a vista" "2002a" "pendente" "08125792621"))
