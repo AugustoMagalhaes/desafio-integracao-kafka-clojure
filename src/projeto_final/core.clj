@@ -87,9 +87,11 @@
 
 (defn topology []
   (doto (Topology.)
-    (.addSource     "registros"                          (into-array String ["registro.cdb"]))
-    (.addProcessor  "processador" (Supplier-processador.)  (into-array String ["registros"]))
-    (.addSink       "cmd-cdb" "registro.cdb"                       (into-array String ["processador"]))))
+    (.addSource     "registros-in"                          (into-array String ["controle" "registro" "relatorio"]))
+    (.addProcessor  "processador" (Supplier-processador.)  (into-array String ["registros-in"]))
+    (.addSink       "cmd-controle" "controle"                       (into-array String ["processador"]))
+    (.addSink       "cmd-registro" "registro"                       (into-array String ["processador"]))
+    (.addSink       "cmd-relatorio" "relatorio"                     (into-array String ["processador"]))))
 
 (defn -main [& args]
 (.start (KafkaStreams. (topology) props)))
