@@ -1,6 +1,5 @@
 (ns projeto-final.db
-  (:require [qbits.alia :as alia]
-            [taoensso.timbre :as log])
+  (:require [qbits.alia :as alia])
   (:gen-class))
 
 
@@ -40,12 +39,11 @@
                                               PRIMARY KEY ((tipo), id_gerado) );"))
 
 (defn popula-registro-tipo
-  [tipo, id_gerado, data_vencimento, valor, quantidade, id_ativo_participante, data_emissao, forma_pagamento, conta_emissao, status, cnpj_cpf]
-  (log/info "entrou na funçao ------------------------------------------------")
+  [tipo, valor, id_gerado, data_vencimento, quantidade, id_ativo_participante, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, cnpj_cpf]
   (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_tipo
-                         (tipo, valor, data_vencimento, id_gerado, quantidade, id_ativo_participante, data_emissao, forma_pagamento, conta_emissao, status, cnpj_cpf)
-                         VALUES(:tipo, :valor, :data_vencimento, :id_gerado, :quantidade, :id_ativo_participante, :data_emissao, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
-    (alia/execute session query-prep {:values {:tipo tipo :id_gerado id_gerado :data_vencimento data_vencimento :valor valor :quantidade quantidade :id_ativo_participante id_ativo_participante :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
+                         (tipo, valor, id_gerado, data_vencimento, quantidade, id_ativo_participante, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, cnpj_cpf)
+                         VALUES(:tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :id_ativo_participante, :data_emissao, :local_emissao, :local_pagamento, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")] 
+    (alia/execute session query-prep {:values {:tipo tipo :valor valor :id_gerado id_gerado :data_vencimento data_vencimento :quantidade quantidade :id_ativo_participante id_ativo_participante :data_emissao data_emissao :local_emissao local_emissao :local_pagamento local_pagamento :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
 
 (defn cria-tabela-registro-id-gerado
   []

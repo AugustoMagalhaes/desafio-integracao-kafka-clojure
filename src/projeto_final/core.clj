@@ -62,22 +62,31 @@
     (set! context c))
   (process [_ k msg]
     (case (.topic context)
-      "registro.cdb"
+      "controle"
       (when (= (:status msg) "pendente")
         (log/info "Mensagem recebida, iniciando processo...")
+        ; fazer a verificaçao
+        (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg))) (To/child "cmd-registro")))
+      
+      "registro"
+      (cond
+        (or (= (:tipo msg) "CDB") (= (:tipo msg) "RDB"))
+        (let [tipo (:tipo msg) valor (:valor msg) id_gerado (:id_gerado msg) data_vencimento (:data_vencimento msg) local_emissao nil local_pagamento nil quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status (:status msg) cnpj_cpf (:cnpj_cpf msg)]
 
-        (.forward context (:tipo msg) (assoc msg :status "executado") (To/child "cmd-cdb"))
-        (log/info "mensagem: " msg)
-        (log/info "a mensagem eh.................... : " k)
-        (log/info "tipo de valor: " (type (:valor msg)))
-        (log/info "tipo de quantidade: " (type (:quantidade msg)))
-        (let [tipo (:tipo msg) id_gerado (:id_gerado msg) data_vencimento (:data_vencimento msg) valor (:valor msg) quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status (:status msg) cnpj_cpf (:cnpj_cpf msg)]
+          (db/popula-registro-tipo tipo valor id_gerado data_vencimento quantidade id_ativo_participante data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          (.forward context (:tipo msg) (assoc msg :status "executado") (To/child "cmd-relatorio")))
+        (= (:tipo msg) "LAM")
+        (let [tipo (:tipo msg) id_gerado (:id_gerado msg) data_vencimento (:data_vencimento msg) valor (:valor msg) quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) local_emissao (:local_emissao msg) local_pagamento (:local_pagamento msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status (:status msg) cnpj_cpf (:cnpj_cpf msg)]
 
-          (db/popula-registro-tipo tipo id_gerado data_vencimento valor quantidade id_ativo_participante data_emissao forma_pagamento conta_emissao status cnpj_cpf))
-        (log/info "CHEGOU ATE AQUI..........................................")
-        (spit "relatorio.txt" (str k ": " msg "\n") :append true))
-             ; checa se existe participante antes....
-             ; gera o id antes
+          (db/popula-registro-tipo tipo valor id_gerado data_vencimento quantidade id_ativo_participante data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          (.forward context (:tipo msg) (assoc msg :status "executado") (To/child "cmd-relatorio")))
+        :else (do
+        (log/info "Apenas registros dos tipos CDB, RDB ou LAM são válidos")
+        "Apenas registros dos tipos CDB, RDB ou LAM são válidos")
+        )
+      "relatorio"
+      (spit "relatorio.txt" (str k ": " msg "\n") :append true) 
+      
       )))
 
 (deftype Supplier-processador []
