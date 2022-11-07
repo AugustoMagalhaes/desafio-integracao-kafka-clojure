@@ -21,9 +21,21 @@
 (defn le [nome]
   (alia/execute session "select * from users where user_name=?" {:values [nome]}))
 
+(defn cria-tabela-participante
+  []
+  (alia/execute session "CREATE TABLE IF NOT EXISTS alia_test.participantes (id varchar,
+    nome varchar,
+    cnpj varchar,
+    PRIMARY KEY (id));"))
+
+(defn popula-participante
+  []
+  (alia/execute session "BEGIN BATCH INSERT INTO alia_test.participantes (id, nome, cnpj) VALUES ('1034', 'Banco do Braseliel', '548976132168749'); INSERT INTO participantes (id, nome, cnpj) VALUES ('5470', 'HSBCELIEL', '8762132106506'); INSERT INTO participantes (id, nome, cnpj) VALUES ('8706', 'Nu Bank', '21530350654046'); INSERT INTO participantes (id, nome, cnpj) VALUES ('2912', 'Bradesco', '73215046540481'); APPLY BATCH"
+))
+
 (defn cria-tabela-registro-tipo
   []
-  (alia/execute session "CREATE TABLE IF NOT EXISTS registro_por_tipo (tipo varchar,
+  (alia/execute session "CREATE TABLE IF NOT EXISTS alia_test.registro_por_tipo (tipo varchar,
                                               valor double,
                                               id_gerado varchar,
                                               data_vencimento varchar,
@@ -42,7 +54,7 @@
   [tipo, valor, id_gerado, data_vencimento, quantidade, id_ativo_participante, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, cnpj_cpf]
   (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_tipo
                          (tipo, valor, id_gerado, data_vencimento, quantidade, id_ativo_participante, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, cnpj_cpf)
-                         VALUES(:tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :id_ativo_participante, :data_emissao, :local_emissao, :local_pagamento, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")] 
+                         VALUES(:tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :id_ativo_participante, :data_emissao, :local_emissao, :local_pagamento, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
     (alia/execute session query-prep {:values {:tipo tipo :valor valor :id_gerado id_gerado :data_vencimento data_vencimento :quantidade quantidade :id_ativo_participante id_ativo_participante :data_emissao data_emissao :local_emissao local_emissao :local_pagamento local_pagamento :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
 
 (defn cria-tabela-registro-id-gerado
@@ -103,6 +115,8 @@
     (str tipo-maiusculo zeros offset-texto)))
 
 (defn inicia []
+  (cria-tabela-participante)
+  (popula-participante)
   (cria-tabela-registro-tipo)
   (cria-tabela-registro-id-gerado)
   (cria-tabela-registro-cadastro))
