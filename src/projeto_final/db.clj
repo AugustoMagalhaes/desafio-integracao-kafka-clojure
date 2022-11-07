@@ -82,10 +82,10 @@
 
 (defn gera-id
   [tipo offset]
-  (let [mytipo (.toUpperCase tipo)
-        myoffset (str offset)
-        zeros (reduce str (repeat (- 8 3 (count myoffset)) "0"))]
-    (str mytipo zeros myoffset)))
+  (let [tipo-maiusculo (.toUpperCase tipo)
+        offset-texto (str offset)
+        zeros (reduce str (repeat (- 8 3 (count offset-texto)) "0"))]
+    (str tipo-maiusculo zeros offset-texto)))
 
 (defn -main []
   (cria-tabela-registro-tipo)
