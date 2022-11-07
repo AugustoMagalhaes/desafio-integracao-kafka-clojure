@@ -47,7 +47,7 @@
 
 (defn cria-tabela-registro-id-gerado
   []
-  (alia/execute session "CREATE TABLE IF NOT EXISTS registro_por_id_gerado (id_gerado varchar,
+  (alia/execute session "CREATE TABLE IF NOT EXISTS registro_por_id (id_gerado varchar,
                                               tipo varchar,
                                               valor double,
                                               id_ativo_participante varchar,
@@ -88,11 +88,11 @@
 
 
 (defn popula-registro-cadastro
-  [cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, id_ativo_participante] 
+  [cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, id_ativo_participante]
   (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_cnpj_cpf
-                         (cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, forma_pagamento, conta_emissao, status, id_ativo_participante)
-                         VALUES(:cnpj_cpf, :tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :data_emissao, :forma_pagamento, :conta_emissao, :status, :id_ativo_participante);")]
-    (alia/execute session query-prep {:values {:cnpj_cpf cnpj_cpf :tipo tipo :valor (double valor) :id_gerado id_gerado :data_vencimento data_vencimento :quantidade (int quantidade) :data_emissao data_emissao :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :id_ativo_participante id_ativo_participante}})))
+                         (cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, id_ativo_participante)
+                         VALUES(:cnpj_cpf, :tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :data_emissao, :local_emissao, :local_pagamento, :forma_pagamento, :conta_emissao, :status, :id_ativo_participante);")]
+    (alia/execute session query-prep {:values {:cnpj_cpf cnpj_cpf :tipo tipo :valor (double valor) :id_gerado id_gerado :data_vencimento data_vencimento :quantidade (int quantidade) :data_emissao data_emissao :local_emissao local_emissao :local_pagamento local_pagamento :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :id_ativo_participante id_ativo_participante}})))
 
 
 (defn gera-id

@@ -74,11 +74,14 @@
         (let [tipo (:tipo msg) valor (:valor msg) id_gerado (:id_gerado msg) data_vencimento (:data_vencimento msg) local_emissao nil local_pagamento nil quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status (:status msg) cnpj_cpf (:cnpj_cpf msg)]
 
           (db/popula-registro-tipo tipo valor id_gerado data_vencimento quantidade id_ativo_participante data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          (db/popula-registro-id id_gerado tipo valor id_ativo_participante data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          ;(db/popula-registro-cadastro)
           (.forward context (:tipo msg) (assoc msg :status "executado") (To/child "cmd-relatorio")))
         (= (:tipo msg) "LAM")
         (let [tipo (:tipo msg) id_gerado (:id_gerado msg) data_vencimento (:data_vencimento msg) valor (:valor msg) quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) local_emissao (:local_emissao msg) local_pagamento (:local_pagamento msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status (:status msg) cnpj_cpf (:cnpj_cpf msg)]
 
           (db/popula-registro-tipo tipo valor id_gerado data_vencimento quantidade id_ativo_participante data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          (db/popula-registro-id id_gerado tipo valor id_ativo_participante data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
           (.forward context (:tipo msg) (assoc msg :status "executado") (To/child "cmd-relatorio")))
         :else (do
         (log/info "Apenas registros dos tipos CDB, RDB ou LAM são válidos")
@@ -103,4 +106,5 @@
     (.addSink       "cmd-relatorio" "relatorio"                     (into-array String ["processador"]))))
 
 (defn -main [& args]
-(.start (KafkaStreams. (topology) props)))
+  (db/inicia)
+  (.start (KafkaStreams. (topology) props)))
