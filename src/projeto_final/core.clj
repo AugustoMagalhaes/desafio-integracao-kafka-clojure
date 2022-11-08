@@ -63,9 +63,9 @@
   (process [_ k msg]
     (case (.topic context)
       "controle"
-      (when (= (empty? (:status msg)))
+      (when (empty? (:status msg))
         (log/info "Mensagem recebida, iniciando processo...")
-        (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :status "pendente") (To/child "cmd-registro")))
+        (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :id_gerado (db/gera-id (.toUpperCase (:tipo msg)) (inc (.offset context))) :status "pendente") (To/child "cmd-registro")))
 
       "registro"
       (cond
