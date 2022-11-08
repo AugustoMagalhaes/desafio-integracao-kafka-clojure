@@ -1,38 +1,32 @@
-version: '3'
+version: "3"
+
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.3.1
     container_name: zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-      ZOOKEEPER_INIT_LIMIT: 5
-      ZOOKEEPER_SERVER_ID: 1
-      ZOOKEEPER_SERVERS: '0.0.0.0:2888:3888'
-      ZOOKEEPER_SYNC_LIMIT: 2
 
+  kakfa:
+    image: confluentinc/cp-enterprise-kafka:latest
+    hostname: kafka
+    container_name: kafka
+    # depends_on:
+    #   - zookeeper
     ports:
-      - '2181:2181'
-      - '2888:2888'
-      - '3888:3888'
-
-  kafka-1:
-    image: confluentinc/cp-kafka:5.3.1
-    container_name: kafka-1
-    ports:
-      - '9091:9091'
-    depends_on:
-      - zookeeper
+      - "29092:29092"
+      - "9092:9092"
     environment:
-      KAFKA_BROKER_ID: '1'
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9091
-      KAFKA_OFFSETS_RETENTION_MINUTES: 2147483647
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: host.docker.internal:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:29092, PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
   cassandra:
     image: cassandra:3.11.6
@@ -40,9 +34,8 @@ services:
     ports:
       - '7000:7000'
       - '9042:9042'
-    depends_on:
-      - kafka-1
+    # depends_on:
+    #   - kafka
     environment:
       CASSANDRA_BROADCAST_ADDRESS: host.docker.internal
       CASSANDRA_CLUSTER_NAME: 'consulta'
-

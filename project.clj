@@ -9,6 +9,7 @@
                  [org.clojure/data.json "2.4.0"]
                  [cc.qbits/alia-all "5.0.0-alpha7"]
                  [org.clojure/tools.logging "0.4.0"]
+                 [prismatic/schema "1.4.1"]
                  [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
                                                     javax.jms/jms
                                                     com.sun.jmdk/jmxtools

@@ -3,6 +3,7 @@
   (:require [clojure.data.json :as json]
             [projeto-final.db :as db]
             [projeto-final.validacoes :as valida]
+            [schema.core :as s]
             [taoensso.timbre :as log])
   (:import [java.util Properties]
            [org.apache.kafka.common.serialization
@@ -63,9 +64,12 @@
   (process [_ k msg]
     (case (.topic context)
       "controle"
-      (when (and (empty? (:status msg)) (valida/valida-json msg))
-        (log/info "Mensagem recebida, iniciando processo...") 
-        (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :status "pendente") (To/child "cmd-registro")))
+      (when (empty? (:status msg))
+        (if (valida/dados-com-erros msg (.toUpperCase (:tipo msg)))
+          (log/info (valida/dados-com-erros msg (.toUpperCase (:tipo msg))))
+          (do
+            (log/info "Mensagem recebida, iniciando processo...")
+            (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :status "pendente") (To/child "cmd-registro")))))
 
       "registro"
       (cond
@@ -78,12 +82,12 @@
           (log/info "mensagem...")
           (.forward context (:tipo msg) (assoc msg :status "executado" :id_gerado id_gerado) (To/child "cmd-relatorio")))
         (= (:tipo msg) "LAM")
-        (let [tipo (:tipo msg) id_gerado (:id_gerado msg) data_vencimento (:data_vencimento msg) valor (:valor msg) quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) local_emissao (:local_emissao msg) local_pagamento (:local_pagamento msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status "executado" cnpj_cpf (:cnpj_cpf msg)]
+        (let [tipo (:tipo msg) id_gerado (db/gera-id (:tipo msg) (inc (.offset context))) data_vencimento (:data_vencimento msg) valor (:valor msg) quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) local_emissao (:local_emissao msg) local_pagamento (:local_pagamento msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status "executado" cnpj_cpf (:cnpj_cpf msg)]
 
           (db/popula-registro-tipo tipo valor id_gerado data_vencimento quantidade id_ativo_participante data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
           (db/popula-registro-id id_gerado tipo valor id_ativo_participante data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
           (db/popula-registro-cadastro cnpj_cpf tipo valor id_gerado data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status id_ativo_participante)
-          (.forward context (:tipo msg) (assoc msg :status "executado") (To/child "cmd-relatorio")))
+          (.forward context (:tipo msg) (assoc msg :status "executado" :id_gerado id_gerado) (To/child "cmd-relatorio")))
         :else (do
                 (log/info "Apenas registros dos tipos CDB, RDB ou LAM são válidos")
                 "Apenas registros dos tipos CDB, RDB ou LAM são válidos"))

@@ -30,8 +30,7 @@
 
 (defn popula-participante
   []
-  (alia/execute session "BEGIN BATCH INSERT INTO alia_test.participantes (id, nome, cnpj) VALUES ('1034', 'Banco do Braseliel', '548976132168749'); INSERT INTO participantes (id, nome, cnpj) VALUES ('5470', 'HSBCELIEL', '8762132106506'); INSERT INTO participantes (id, nome, cnpj) VALUES ('8706', 'Nu Bank', '21530350654046'); INSERT INTO participantes (id, nome, cnpj) VALUES ('2912', 'Bradesco', '73215046540481'); APPLY BATCH"
-))
+  (alia/execute session "BEGIN BATCH INSERT INTO alia_test.participantes (id, nome, cnpj) VALUES ('1034', 'Banco do Braseliel', '548976132168749'); INSERT INTO participantes (id, nome, cnpj) VALUES ('5470', 'HSBCELIEL', '8762132106506'); INSERT INTO participantes (id, nome, cnpj) VALUES ('8706', 'Nu Bank', '21530350654046'); INSERT INTO participantes (id, nome, cnpj) VALUES ('2912', 'Bradesco', '73215046540481'); APPLY BATCH"))
 
 (defn cria-tabela-registro-tipo
   []
