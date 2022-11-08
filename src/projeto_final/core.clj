@@ -2,6 +2,7 @@
   (:gen-class)
   (:require [clojure.data.json :as json]
             [projeto-final.db :as db]
+            [projeto-final.validacoes :as valida]
             [taoensso.timbre :as log])
   (:import [java.util Properties]
            [org.apache.kafka.common.serialization
@@ -13,7 +14,6 @@
             StringSerializer]
            [org.apache.kafka.streams KafkaStreams StreamsConfig Topology]
            [org.apache.kafka.streams.processor Processor ProcessorSupplier To]))
-;; (defn -main
 ;;   "I don't do a whole lot ... yet."
 ;;   [& args]
 ;;   (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To
@@ -63,8 +63,8 @@
   (process [_ k msg]
     (case (.topic context)
       "controle"
-      (when (empty? (:status msg))
-        (log/info "Mensagem recebida, iniciando processo...")
+      (when (and (empty? (:status msg)) (valida/valida-json msg))
+        (log/info "Mensagem recebida, iniciando processo...") 
         (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :status "pendente") (To/child "cmd-registro")))
 
       "registro"
