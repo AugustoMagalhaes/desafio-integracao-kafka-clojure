@@ -15,10 +15,6 @@
             StringSerializer]
            [org.apache.kafka.streams KafkaStreams StreamsConfig Topology]
            [org.apache.kafka.streams.processor Processor ProcessorSupplier To]))
-;;   "I don't do a whole lot ... yet."
-;;   [& args]
-;;   (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To
-;;            log/info logt/info .json AdminClientConfig NewTopic KafkaAdminClient KafkaConsumer KafkaProducer ProducerRecord TopicPartition Duration))
 
 
 (deftype Desserializador []
@@ -65,8 +61,8 @@
     (case (.topic context)
       "controle"
       (when (empty? (:status msg))
-        (if (valida/dados-com-erros msg (.toUpperCase (:tipo msg)))
-          (log/info (valida/dados-com-erros msg (.toUpperCase (:tipo msg))))
+        (if (or (db/falta-id-participante (:conta_emissao msg)) (valida/dados-com-erros? msg (.toUpperCase (:tipo msg))))
+          (log/info (or (valida/dados-com-erros? msg (.toUpperCase (:tipo msg))) "ID do participante não encontrado"))
           (do
             (log/info "Mensagem recebida, iniciando processo...")
             (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :status "pendente") (To/child "cmd-registro")))))

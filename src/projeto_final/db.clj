@@ -1,5 +1,6 @@
 (ns projeto-final.db
-  (:require [qbits.alia :as alia])
+  (:require [qbits.alia :as alia]
+            [taoensso.timbre :as log])
   (:gen-class))
 
 
@@ -112,6 +113,11 @@
         offset-texto (str offset)
         zeros (reduce str (repeat (- 8 3 (count offset-texto)) "0"))]
     (str tipo-maiusculo zeros offset-texto)))
+
+(defn falta-id-participante
+  [id]
+  (log/info (alia/execute session "SELECT * FROM alia_test.participantes where id=?;" {:values [id]}))
+  (empty? (remove-list (alia/execute session "SELECT * FROM participantes where id=?;" {:values [id]}))))
 
 (defn inicia []
   (cria-tabela-participante)

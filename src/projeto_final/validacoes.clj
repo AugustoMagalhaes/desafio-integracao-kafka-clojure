@@ -28,7 +28,7 @@
    :conta_emissao s/Str
    :cnpj_cpf s/Str})
 
-(defn dados-com-erros [msg tipo]
+(defn dados-com-erros? [msg tipo]
   (if (= tipo "LAM")
     (let [erro (try (s/validate LAM msg) (catch Exception e "Erro de validação: " (.getMessage e)))]
       (if (string? erro)
@@ -39,15 +39,3 @@
         erro
         false))))
 
-(defn gera-data []
-  (.format (java.text.SimpleDateFormat. "dd/MM/yyyy") (new java.util.Date)))
-
-(defn valida-json [msg]
-  (instance? clojure.lang.PersistentHashMap msg))
-
-(defn valida-number [valor quantidade]
-  (and (number? valor) (number? quantidade)))
-
-(defn valida-strings
-  [& args]
-  (every? string? args))
