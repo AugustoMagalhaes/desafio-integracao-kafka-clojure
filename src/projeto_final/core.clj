@@ -63,11 +63,10 @@
   (process [_ k msg]
     (case (.topic context)
       "controle"
-      (when (= (:status msg) "pendente")
+      (when (= (empty? (:status msg)))
         (log/info "Mensagem recebida, iniciando processo...")
-        ; fazer a verificaçao
-        (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg))) (To/child "cmd-registro")))
-      
+        (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :status "pendente") (To/child "cmd-registro")))
+
       "registro"
       (cond
         (or (= (:tipo msg) "CDB") (= (:tipo msg) "RDB"))
@@ -76,6 +75,7 @@
           (db/popula-registro-tipo tipo valor id_gerado data_vencimento quantidade id_ativo_participante data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
           (db/popula-registro-id id_gerado tipo valor id_ativo_participante data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
           (db/popula-registro-cadastro cnpj_cpf tipo valor id_gerado data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status id_ativo_participante)
+          (log/info "mensagem...")
           (.forward context (:tipo msg) (assoc msg :status "executado") (To/child "cmd-relatorio")))
         (= (:tipo msg) "LAM")
         (let [tipo (:tipo msg) id_gerado (:id_gerado msg) data_vencimento (:data_vencimento msg) valor (:valor msg) quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) local_emissao (:local_emissao msg) local_pagamento (:local_pagamento msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status "executado" cnpj_cpf (:cnpj_cpf msg)]
@@ -85,13 +85,10 @@
           (db/popula-registro-cadastro cnpj_cpf tipo valor id_gerado data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status id_ativo_participante)
           (.forward context (:tipo msg) (assoc msg :status "executado") (To/child "cmd-relatorio")))
         :else (do
-        (log/info "Apenas registros dos tipos CDB, RDB ou LAM são válidos")
-        "Apenas registros dos tipos CDB, RDB ou LAM são válidos")
-        )
+                (log/info "Apenas registros dos tipos CDB, RDB ou LAM são válidos")
+                "Apenas registros dos tipos CDB, RDB ou LAM são válidos"))
       "relatorio"
-      (spit "relatorio.txt" (str k ": " msg "\n") :append true) 
-      
-      )))
+      (spit "relatorio.txt" (str k ": " msg "\n") :append true))))
 
 (deftype Supplier-processador []
   ProcessorSupplier
