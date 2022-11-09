@@ -1,3 +1,1 @@
-RDB: {:valor 72.1, :conta_emissao "2912", :tipo "RDB", :id_gerado "RDB00001", :cnpj_cpf "08125799909", :status "executado", :data_vencimento "27-11-2022", :data_emissao "07-11-2022", :quantidade 22, :forma_pagamento "debito", :id_ativo_participante "101011"}
-CDB: {:valor 72.1, :conta_emissao "2912", :tipo "CDB", :id_gerado "CDB00002", :cnpj_cpf "08125799909", :status "executado", :data_vencimento "27-11-2022", :data_emissao "07-11-2022", :quantidade 22, :forma_pagamento "debito", :id_ativo_participante "101011"}
-LAM: {:local_emissao "santa rita do passaquatro", :valor 333.0, :conta_emissao "2912", :local_pagamento "santa rita do passaquatro", :tipo "LAM", :id_gerado "LAM00001", :cnpj_cpf "08125799909", :status "executado", :data_vencimento "27-11-2022", :data_emissao "07-11-2022", :quantidade 222, :forma_pagamento "debito", :id_ativo_participante "101011"}
+

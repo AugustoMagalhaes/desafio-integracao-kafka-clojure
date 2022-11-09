@@ -4,7 +4,7 @@
   (:gen-class))
 
 
-(def session (alia/session {:session-keyspace "alia_test"
+(def session (alia/session {:session-keyspace "registradora"
                             :contact-points ["host.docker.internal:9042"]
                             :load-balancing-local-datacenter "datacenter1"}))
 
@@ -24,18 +24,18 @@
 
 (defn cria-tabela-participante
   []
-  (alia/execute session "CREATE TABLE IF NOT EXISTS alia_test.participantes (id varchar,
+  (alia/execute session "CREATE TABLE IF NOT EXISTS registradora.participantes (id varchar,
     nome varchar,
     cnpj varchar,
     PRIMARY KEY (id));"))
 
 (defn popula-participante
   []
-  (alia/execute session "BEGIN BATCH INSERT INTO alia_test.participantes (id, nome, cnpj) VALUES ('1034', 'Banco do Braseliel', '548976132168749'); INSERT INTO participantes (id, nome, cnpj) VALUES ('5470', 'HSBCELIEL', '8762132106506'); INSERT INTO participantes (id, nome, cnpj) VALUES ('8706', 'Nu Bank', '21530350654046'); INSERT INTO participantes (id, nome, cnpj) VALUES ('2912', 'Bradesco', '73215046540481'); APPLY BATCH"))
+  (alia/execute session "BEGIN BATCH INSERT INTO registradora.participantes (id, nome, cnpj) VALUES ('1034', 'Banco do Braseliel', '548976132168749'); INSERT INTO participantes (id, nome, cnpj) VALUES ('5470', 'HSBCELIEL', '8762132106506'); INSERT INTO participantes (id, nome, cnpj) VALUES ('8706', 'Nu Bank', '21530350654046'); INSERT INTO participantes (id, nome, cnpj) VALUES ('2912', 'Bradesco', '73215046540481'); APPLY BATCH"))
 
 (defn cria-tabela-registro-tipo
   []
-  (alia/execute session "CREATE TABLE IF NOT EXISTS alia_test.registro_por_tipo (tipo varchar,
+  (alia/execute session "CREATE TABLE IF NOT EXISTS registradora.registro_por_tipo (tipo varchar,
                                               valor double,
                                               id_gerado varchar,
                                               data_vencimento varchar,
@@ -52,7 +52,7 @@
 
 (defn popula-registro-tipo
   [tipo, valor, id_gerado, data_vencimento, quantidade, id_ativo_participante, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, cnpj_cpf]
-  (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_tipo
+  (let [query-prep (alia/prepare session "INSERT INTO registradora.registro_por_tipo
                          (tipo, valor, id_gerado, data_vencimento, quantidade, id_ativo_participante, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, cnpj_cpf)
                          VALUES(:tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :id_ativo_participante, :data_emissao, :local_emissao, :local_pagamento, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
     (alia/execute session query-prep {:values {:tipo tipo :valor valor :id_gerado id_gerado :data_vencimento data_vencimento :quantidade quantidade :id_ativo_participante id_ativo_participante :data_emissao data_emissao :local_emissao local_emissao :local_pagamento local_pagamento :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
@@ -76,7 +76,7 @@
 
 (defn popula-registro-id
   [id_gerado, tipo, valor, id_ativo_participante, data_vencimento, quantidade, data_emissao, local_emissao, local_pagamento,forma_pagamento, conta_emissao, status, cnpj_cpf]
-  (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_id
+  (let [query-prep (alia/prepare session "INSERT INTO registradora.registro_por_id
                          (id_gerado, tipo, valor, id_ativo_participante, data_vencimento, quantidade, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, cnpj_cpf)
                          VALUES(:id_gerado, :tipo, :valor, :id_ativo_participante, :data_vencimento, :quantidade, :data_emissao, :local_emissao, :local_pagamento, :forma_pagamento, :conta_emissao, :status, :cnpj_cpf);")]
     (alia/execute session query-prep {:values {:id_gerado id_gerado :tipo tipo :valor (double valor) :id_ativo_participante id_ativo_participante :data_vencimento data_vencimento :quantidade (int quantidade) :data_emissao data_emissao :local_emissao local_emissao :local_pagamento local_pagamento :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :cnpj_cpf cnpj_cpf}})))
@@ -101,7 +101,7 @@
 
 (defn popula-registro-cadastro
   [cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, id_ativo_participante]
-  (let [query-prep (alia/prepare session "INSERT INTO alia_test.registro_por_cnpj_cpf
+  (let [query-prep (alia/prepare session "INSERT INTO registradora.registro_por_cnpj_cpf
                          (cnpj_cpf, tipo, valor, id_gerado, data_vencimento, quantidade, data_emissao, local_emissao, local_pagamento, forma_pagamento, conta_emissao, status, id_ativo_participante)
                          VALUES(:cnpj_cpf, :tipo, :valor, :id_gerado, :data_vencimento, :quantidade, :data_emissao, :local_emissao, :local_pagamento, :forma_pagamento, :conta_emissao, :status, :id_ativo_participante);")]
     (alia/execute session query-prep {:values {:cnpj_cpf cnpj_cpf :tipo tipo :valor (double valor) :id_gerado id_gerado :data_vencimento data_vencimento :quantidade (int quantidade) :data_emissao data_emissao :local_emissao local_emissao :local_pagamento local_pagamento :forma_pagamento forma_pagamento :conta_emissao conta_emissao :status status :id_ativo_participante id_ativo_participante}})))
@@ -116,7 +116,6 @@
 
 (defn falta-id-participante
   [id]
-  (log/info (alia/execute session "SELECT * FROM alia_test.participantes where id=?;" {:values [id]}))
   (empty? (remove-list (alia/execute session "SELECT * FROM participantes where id=?;" {:values [id]}))))
 
 (defn inicia []
