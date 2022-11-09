@@ -63,7 +63,7 @@
         (if (or (db/falta-id-participante (:conta_emissao msg)) (valida/dados-com-erros? msg (.toUpperCase (:tipo msg))))
           (log/info (or (valida/dados-com-erros? msg (.toUpperCase (:tipo msg))) "ID do participante não encontrado"))
           (do
-            (log/info "Mensagem recebida, iniciando processo...")
+            (log/info "Mensagem recebida no controlador, iniciando processo...")
             (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :status "pendente") (To/child "cmd-registro")))))
 
       "registro"
