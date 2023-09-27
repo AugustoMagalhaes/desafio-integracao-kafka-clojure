@@ -1,14 +1,10 @@
 (ns projeto-final.core
   (:gen-class)
   (:require [clojure.data.json :as json]
-            [clojure.tools.logging :as log]
-            [taoensso.timbre :as logt])
-  (:import (java.time Duration)
-           [java.util Properties]
-           [org.apache.kafka.clients.admin AdminClientConfig KafkaAdminClient NewTopic]
-           org.apache.kafka.clients.consumer.KafkaConsumer
-           [org.apache.kafka.clients.producer KafkaProducer ProducerRecord]
-           (org.apache.kafka.common TopicPartition)
+            [projeto-final.db :as db]
+            [projeto-final.validacoes :as valida]
+            [taoensso.timbre :as log])
+  (:import [java.util Properties]
            [org.apache.kafka.common.serialization
             Deserializer
             Serde
@@ -18,12 +14,6 @@
             StringSerializer]
            [org.apache.kafka.streams KafkaStreams StreamsConfig Topology]
            [org.apache.kafka.streams.processor Processor ProcessorSupplier To]))
-
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println Properties Serdes Serde Serializer Deserializer StringSerializer StringDeserializer KafkaStreams StreamsConfig Topology Processor ProcessorSupplier To
-           log/info logt/info .json AdminClientConfig NewTopic KafkaAdminClient KafkaConsumer KafkaProducer ProducerRecord TopicPartition Duration))
 
 
 (deftype Desserializador []
@@ -57,7 +47,7 @@
   (doto (Properties.)
     (.putAll
      {StreamsConfig/APPLICATION_ID_CONFIG  "trt-topology"
-      StreamsConfig/BOOTSTRAP_SERVERS_CONFIG "host.docker.internal:9042"
+      StreamsConfig/BOOTSTRAP_SERVERS_CONFIG "host.docker.internal:29092"
       StreamsConfig/DEFAULT_KEY_SERDE_CLASS_CONFIG (.getClass (Serdes/String))
       StreamsConfig/DEFAULT_VALUE_SERDE_CLASS_CONFIG (.getClass (Serde-personalizado.))})))
 
@@ -66,7 +56,39 @@
   (close [_])
   (init [_ c]
     (set! context c))
-  (process [_ k msg]))
+  (process [_ k msg]
+    (case (.topic context)
+      "controle"
+      (when (empty? (:status msg))
+        (if (or (db/falta-id-participante (:conta_emissao msg)) (valida/dados-com-erros? msg (.toUpperCase (:tipo msg))))
+          (log/info (or (valida/dados-com-erros? msg (.toUpperCase (:tipo msg))) "ID do participante não encontrado"))
+          (do
+            (log/info "Mensagem recebida no controlador, iniciando processo...")
+            (.forward context (.toUpperCase (:tipo msg)) (assoc msg :tipo (.toUpperCase (:tipo msg)) :status "pendente") (To/child "cmd-registro")))))
+
+      "registro"
+      (cond
+        (or (= (:tipo msg) "CDB") (= (:tipo msg) "RDB"))
+        (let [tipo (:tipo msg) valor (:valor msg) id_gerado (db/gera-id (:tipo msg) (inc (.offset context))) data_vencimento (:data_vencimento msg) local_emissao nil local_pagamento nil quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status "executado" cnpj_cpf (:cnpj_cpf msg)]
+
+          (db/popula-registro-tipo tipo valor id_gerado data_vencimento quantidade id_ativo_participante data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          (db/popula-registro-id id_gerado tipo valor id_ativo_participante data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          (db/popula-registro-cadastro cnpj_cpf tipo valor id_gerado data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status id_ativo_participante)
+          (log/info "Mensagem do" id_gerado "enviada para o relatório")
+          (.forward context (:tipo msg) (assoc msg :status "executado" :id_gerado id_gerado) (To/child "cmd-relatorio")))
+        (= (:tipo msg) "LAM")
+        (let [tipo (:tipo msg) id_gerado (db/gera-id (:tipo msg) (inc (.offset context))) data_vencimento (:data_vencimento msg) valor (:valor msg) quantidade (int (:quantidade msg)) id_ativo_participante (:id_ativo_participante msg) data_emissao (:data_emissao msg) local_emissao (:local_emissao msg) local_pagamento (:local_pagamento msg) forma_pagamento (:forma_pagamento msg) conta_emissao (:conta_emissao msg) status "executado" cnpj_cpf (:cnpj_cpf msg)]
+
+          (db/popula-registro-tipo tipo valor id_gerado data_vencimento quantidade id_ativo_participante data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          (db/popula-registro-id id_gerado tipo valor id_ativo_participante data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status cnpj_cpf)
+          (db/popula-registro-cadastro cnpj_cpf tipo valor id_gerado data_vencimento quantidade data_emissao local_emissao local_pagamento forma_pagamento conta_emissao status id_ativo_participante)
+          (log/info "Mensagem do" id_gerado "enviada para o relatório")
+          (.forward context (:tipo msg) (assoc msg :status "executado" :id_gerado id_gerado) (To/child "cmd-relatorio")))
+        :else (do
+                (log/info "Apenas registros dos tipos CDB, RDB ou LAM são válidos")
+                "Apenas registros dos tipos CDB, RDB ou LAM são válidos"))
+      "relatorio"
+      (spit "relatorio.txt" (str k ": " msg "\n") :append true))))
 
 (deftype Supplier-processador []
   ProcessorSupplier
@@ -75,6 +97,12 @@
 
 (defn topology []
   (doto (Topology.)
-    (.addSource     ""                          (into-array String [""]))
-    (.addProcessor  "" (Supplier-processador.)  (into-array String [""]))
-    (.addSink       "" ""                       (into-array String [""]))))
+    (.addSource     "registros-in"                          (into-array String ["controle" "registro" "relatorio"]))
+    (.addProcessor  "processador" (Supplier-processador.)  (into-array String ["registros-in"]))
+    (.addSink       "cmd-controle" "controle"                       (into-array String ["processador"]))
+    (.addSink       "cmd-registro" "registro"                       (into-array String ["processador"]))
+    (.addSink       "cmd-relatorio" "relatorio"                     (into-array String ["processador"]))))
+
+(defn -main [& args]
+  (db/inicia)
+  (.start (KafkaStreams. (topology) props)))
